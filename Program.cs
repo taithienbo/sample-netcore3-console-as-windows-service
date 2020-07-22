@@ -1,30 +1,31 @@
-﻿using System;
-using System.IO;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace SampleApp
 {
     class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            var currentTime = DateTime.Now;
-            var holder = "";
-            if (currentTime.Hour < 12)
-            {
-                holder = "morning";
-            }
-            else if (currentTime.Hour > 12 && currentTime.Hour < 17)
-            {
-                holder = "afternoon";
-            }
-            else
-            {
-                holder = "Evening";
-            }
-            using (var fs = new StreamWriter("output.txt", true))
-            {
-                fs.WriteLine($"Good {holder}. The time is {currentTime}");
-            }          
+            var builder = new HostBuilder();
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            Log.Logger =  new LoggerConfiguration()
+            .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddHostedService<Worker>();
+                })
+                .ConfigureLogging((hostContext, logging) =>
+                {
+                    logging.AddSerilog();
+                });
         }
     }
 }
