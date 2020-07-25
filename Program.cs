@@ -25,7 +25,8 @@ namespace SampleApp
                 .ConfigureLogging((hostContext, logging) =>
                 {
                     logging.AddSerilog();
-                });
+                })
+                .UseWindowsService();
         }
     }
 }
